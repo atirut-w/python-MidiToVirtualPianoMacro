@@ -10,6 +10,17 @@ global infoTuple
 isPlaying = False
 storedIndex = 0
 conversionCases = {'!': '1', '@': '2', '£': '3', '$': '4', '%': '5', '^': '6', '&': '7', '*': '8', '(': '9', ')': '0'}
+# octave1 = list("1!2@34$5%6^7")
+# octave2 = list("8*9(0qQwWeEr")
+# octave3 = list("tTyYuiIoOpPa")
+# octave4 = list("sSdDfgGhHjJk")
+# octave5 = list("lLzZxcCvVbBnm")
+octaves = [
+	list("1!2@34$5%6^78*9(0qQwWeErt"),
+	list("tTyYuiIoOpPasSdDfgGhHjJkl"),
+	list("lLzZxcCvVbBnm"),
+]
+main_keys = list('q1w2er3t4y5ui6o7p[8]9\\0-=')
 
 key_delete = 'delete'
 key_shift = 'shift'
@@ -36,28 +47,32 @@ def isShifted(charIn):
 		return True
 	return False
 
+def to_undawn(char: str) -> tuple[int, int]:
+	oct = 0
+	char_index = 0
+	for i in range(len(octaves)):
+		if char in octaves[i]:
+			oct = i
+			char_index = octaves[i].index(char)
+			break
+	return oct, char_index
+
 def pressLetter(strLetter):
-	if isShifted(strLetter):
-		# we have to convert all symbols to numbers
-		if strLetter in conversionCases:
-			strLetter = conversionCases[strLetter]
-		keyboard.release(strLetter.lower())
-		keyboard.press(key_shift)
-		keyboard.press(strLetter.lower())
-		keyboard.release(key_shift)
-	else:
-		keyboard.release(strLetter)
-		keyboard.press(strLetter)
-	return
+	oct, chi = to_undawn(strLetter)
+
+	# Switch octave
+	keyboard.press("f" + str(oct+1))
+	keyboard.release("f" + str(oct+1))
+
+	# Update key
+	keyboard.press(main_keys[chi]) # In case the key is stuck
+	keyboard.press(main_keys[chi])
 	
 def releaseLetter(strLetter):
-	if isShifted(strLetter):
-		if strLetter in conversionCases:
-				strLetter = conversionCases[strLetter]
-		keyboard.release(strLetter.lower())
-	else:
-		keyboard.release(strLetter)
-	return
+	oct, chi = to_undawn(strLetter)
+
+	# Update key
+	keyboard.release(main_keys[chi])
 	
 def processFile():
 	global playback_speed
